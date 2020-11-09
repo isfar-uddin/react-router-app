@@ -1,11 +1,11 @@
 import './App.css';
-import React, {useState} from 'react';
-import { BrowserRouter as Router, Route, NavLink } from 'react-router-dom';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Route, NavLink, Redirect, Prompt } from 'react-router-dom';
 
-const User = ({ match }) => {
+const User = (params) => {
   return (
     <h1>
-      Welcome User {match.params.username}
+      Welcome User {params.params}
     </h1>
   )
 }
@@ -15,10 +15,9 @@ function App() {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const handleClick = async (e)=> {
+  const handleClick = (e) => {
     e.preventDefault();
-    await setIsLoggedIn(true);
-    console.log(isLoggedIn);
+    setIsLoggedIn(!isLoggedIn);
   }
 
   return (
@@ -34,29 +33,36 @@ function App() {
             }>Home</NavLink>
           </li>
           <li>
-            <NavLink to="/about"  activeStyle={
+            <NavLink to="/about" activeStyle={
               {
                 color: 'green'
               }
             }>About</NavLink>
           </li>
           <li>
-            <NavLink to="/user/Tom"  activeStyle={
+            <NavLink to="/user/Tom" activeStyle={
               {
                 color: 'green'
               }
             }>User Tom</NavLink>
           </li>
           <li>
-            <NavLink to="/user/Isfar"  activeStyle={
+            <NavLink to="/user/Isfar" activeStyle={
               {
                 color: 'green'
               }
             }>User Isfar</NavLink>
           </li>
         </ul>
-        
-        <input type="button" value="log in" onClick={(e)=>handleClick(e)}/>
+        <Prompt
+          when={!isLoggedIn}
+          message={(location) =>{
+            return location.pathname.startsWith('/user') ? 'Are you sure? ': true
+          }}
+        />
+
+        <input type="button" value={isLoggedIn ? 'Logout' : 'Login'} onClick={(e) => handleClick(e)} />
+
         <Route path="/" exact strict render={
           () => {
             return (
@@ -73,7 +79,12 @@ function App() {
           }
         } />
 
-        <Route path="/user/:username" exact strict component={User} />
+        <Route path="/user/:username" exact strict render={
+          ({ match }) => (
+            isLoggedIn ? <User params={match.params.username} /> :
+              <Redirect to='/' />
+          )
+        } />
 
       </div>
     </Router>
